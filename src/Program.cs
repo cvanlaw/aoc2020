@@ -26,17 +26,29 @@ namespace AoC2020
             {
                 var thisLine = lines[i];
 
-                for (var j = i + 1; j < lines.Count - 1; j++)
+                for (var j = i + 1; j < lines.Count - 2; j++)
                 {
                     var nextLine = lines[j];
 
                     if (thisLine + nextLine == 2020)
                     {
                         Console.WriteLine($"Answer: {thisLine * nextLine}");
-                        break;
+                    }
+
+                    for (var k = j + 1; k < lines.Count; k++)
+                    {
+                        var thirdLine = lines[k];
+
+                        if (thisLine + nextLine + thirdLine == 2020)
+                        {
+                            Console.WriteLine($"2nd Answer: {thisLine * nextLine * thirdLine}");
+                            break;
+                        }
                     }
                 }
             }
+
+
         }
     }
 }
