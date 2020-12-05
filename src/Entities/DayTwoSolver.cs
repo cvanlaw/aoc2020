@@ -37,9 +37,11 @@ namespace AoC2020.Entities
             }
 
             Console.WriteLine($"Searching {lines.Count} lines in file...");
-            var validCount = lines.Count(x => x.IsValid());
-            builder.Append($"1st Answer: {validCount}");
+            var validCount = lines.Count(x => x.IsValidOne());
+            builder.Append($"\n1st Answer: {validCount}");
 
+            var secondValidCount = lines.Count(x => x.IsValidTwo());
+            builder.Append($"\n2nd Answer: {secondValidCount}");
             return builder.ToString();
         }
 
@@ -66,10 +68,16 @@ namespace AoC2020.Entities
 
             public string Raw { get; set; }
 
-            public bool IsValid()
+            public bool IsValidOne()
             {
                 var matchingCharacters = this.Password.Where(c => c == this.Character).ToList();
                 return matchingCharacters.Count >= this.MinimumCount && matchingCharacters.Count <= this.MaximumCount;
+            }
+
+            public bool IsValidTwo()
+            {
+                return (this.Password.ToArray()[this.MinimumCount - 1] == this.Character && this.Password.ToArray()[this.MaximumCount - 1] != this.Character)
+                    || (this.Password.ToArray()[this.MaximumCount - 1] == this.Character && this.Password.ToArray()[this.MinimumCount - 1] != this.Character);
             }
         }
     }
