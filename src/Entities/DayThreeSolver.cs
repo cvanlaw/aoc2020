@@ -35,36 +35,48 @@ namespace AoC2020.Entities
                 }
             }
 
-            (int x, int y) slope = (3, 1);
-            var treeCount = 0;
+            List<(int x, int y)> slopes = new List<(int x, int y)> { (1, 1), (3, 1), (5, 1), (7, 1), (1, 2) };
 
-            (int x, int y) currentPosition = (0, 0);
+            var treeProduct = 0;
             var maxY = lines.Count;
             var maxX = lines.First().Length;
 
-            while (currentPosition.y < maxY)
+            foreach (var slope in slopes)
             {
-                currentPosition.x += slope.x;
+                var treeCount = 0;
+                (int x, int y) currentPosition = (0, 0);
 
-                if (currentPosition.x >= maxX)
+                while (currentPosition.y < maxY)
                 {
-                    currentPosition.x -= maxX;
+                    currentPosition.x += slope.x;
+
+                    if (currentPosition.x >= maxX)
+                    {
+                        currentPosition.x -= maxX;
+                    }
+
+                    currentPosition.y += slope.y;
+
+                    if (currentPosition.y >= maxY)
+                    {
+                        break;
+                    }
+
+                    if (lines[currentPosition.y].ToCharArray()[currentPosition.x] == '#')
+                    {
+                        treeCount++;
+                    }
                 }
 
-                currentPosition.y += slope.y;
-
-                if (currentPosition.y >= maxY)
+                if (slope.x == 3 && slope.y == 1)
                 {
-                    break;
+                    builder.Append($"\n1st Answer: {treeCount}");
                 }
 
-                if (lines[currentPosition.y].ToCharArray()[currentPosition.x] == '#')
-                {
-                    treeCount++;
-                }
+                treeProduct = treeProduct == 0 ? treeCount : treeProduct * treeCount;
             }
 
-            builder.Append($"1st Answer: {treeCount}");
+            builder.Append($"\n2nd Answer: {treeProduct}");
 
             return builder.ToString();
         }
