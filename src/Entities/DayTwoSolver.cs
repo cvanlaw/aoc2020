@@ -32,7 +32,7 @@ namespace AoC2020.Entities
                 string line = null;
                 while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
-                    lines.Add(new DayTwoLine(line));
+                    lines.Add(DayTwoLine.Parse(line));
                 }
             }
 
@@ -47,15 +47,17 @@ namespace AoC2020.Entities
 
         private class DayTwoLine
         {
-            public DayTwoLine(string input)
+            public static DayTwoLine Parse(string input)
             {
                 var match = (new Regex(@"((\d*)-(\d*))\s([a-z|A-Z]):\s(\w*)", RegexOptions.Compiled)).Match(input);
-
-                this.MinimumCount = int.Parse(match.Groups[2].ToString());
-                this.MaximumCount = int.Parse(match.Groups[3].ToString());
-                this.Character = char.Parse(match.Groups[4].ToString());
-                this.Password = match.Groups[5].ToString();
-                this.Raw = input;
+                return new DayTwoLine
+                {
+                    MinimumCount = int.Parse(match.Groups[2].ToString()),
+                    MaximumCount = int.Parse(match.Groups[3].ToString()),
+                    Character = char.Parse(match.Groups[4].ToString()),
+                    Password = match.Groups[5].ToString(),
+                    Raw = input,
+                };
             }
 
             public int MinimumCount { get; set; }
