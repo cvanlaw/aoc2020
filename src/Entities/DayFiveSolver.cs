@@ -37,7 +37,19 @@ namespace AoC2020.Entities
                 }
             }
 
-            builder.Append($"1st Answer {boardingPasses.Max(x => x.SeatId)}");
+            builder.Append($"\n1st Answer {boardingPasses.Max(x => x.SeatId)}");
+
+            var previousId = 0;
+            var orderedPasses = boardingPasses.OrderBy(x => x.SeatId);
+            foreach (var pass in orderedPasses)
+            {
+                if (pass.SeatId - previousId == 2 && previousId != 0)
+                {
+                    builder.Append($"\n2nd Answer: {previousId + 1}");
+                }
+
+                previousId = pass.SeatId;
+            }
 
             return builder.ToString();
         }
@@ -47,6 +59,9 @@ namespace AoC2020.Entities
 
     public class BoardingPass
     {
+        private static List<int> PossibleRows = Enumerable.Range(0, 128).ToList();
+        private static List<int> PossibleColumns = Enumerable.Range(0, 8).ToList();
+
         public BoardingPass(string value)
         {
             this.Value = value;
@@ -58,25 +73,20 @@ namespace AoC2020.Entities
             get
             {
                 var rowPart = this.Value.Substring(0, 7);
-                var minRow = 0;
-                var maxRow = 127;
-                var lastTouched = 0;
-
+                var rowWorkingList = PossibleRows;
                 foreach (var part in rowPart.ToArray())
                 {
                     if (part == 'F')
                     {
-                        maxRow = maxRow - ((maxRow - minRow) / 2);
-                        lastTouched = maxRow;
+                        rowWorkingList = rowWorkingList.Take(rowWorkingList.Count / 2).ToList();
                     }
                     else
                     {
-                        minRow = (maxRow - minRow) / 2 + 1 + minRow;
-                        lastTouched = minRow;
+                        rowWorkingList = rowWorkingList.Skip(rowWorkingList.Count / 2).ToList();
                     }
                 }
 
-                return minRow - 1;
+                return rowWorkingList.First();
             }
         }
 
@@ -85,28 +95,28 @@ namespace AoC2020.Entities
             get
             {
                 var columnPart = this.Value.Substring(7, 3);
-                var minCol = 0;
-                var maxCol = 7;
-                var lastTouched = 0;
-
+                var columnWorkingList = PossibleColumns;
                 foreach (var part in columnPart.ToArray())
                 {
                     if (part == 'L')
                     {
-                        maxCol = maxCol - ((maxCol - minCol) / 2);
-                        lastTouched = maxCol;
+                        columnWorkingList = columnWorkingList.Take(columnWorkingList.Count / 2).ToList();
                     }
                     else
                     {
-                        minCol = (maxCol - minCol) / 2 + 1 + minCol;
-                        lastTouched = minCol;
+                        columnWorkingList = columnWorkingList.Skip(columnWorkingList.Count / 2).ToList();
                     }
                 }
 
-                return minCol;
+                return columnWorkingList.First();
             }
         }
 
         public int SeatId => this.Row * 8 + this.Column;
+
+        public override string ToString()
+        {
+            return this.SeatId.ToString();
+        }
     }
 }
