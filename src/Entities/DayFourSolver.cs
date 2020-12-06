@@ -57,16 +57,54 @@ namespace AoC2020.Entities
                 }
             }
 
-            var numberOfValidPassports = passports.Count(p => p.ContainsKey("byr")
-                    && p.ContainsKey("iyr")
-                    && p.ContainsKey("eyr")
-                    && p.ContainsKey("hgt")
-                    && p.ContainsKey("hcl")
-                    && p.ContainsKey("ecl")
-                    && p.ContainsKey("pid"));
-            builder.Append($"1st Answer: {numberOfValidPassports}");
+            var numberOfValidPassports = passports.Count(p => PassportValidators.IsValid(p));
+            builder.Append($"Answer: {numberOfValidPassports}");
 
             return builder.ToString();
+        }
+
+        private class PassportValidators
+        {
+            public static bool IsValid(Dictionary<string, string> passport)
+            {
+                return passport.ContainsKey("byr")
+                    && passport.ContainsKey("iyr")
+                    && passport.ContainsKey("eyr")
+                    && passport.ContainsKey("hgt")
+                    && passport.ContainsKey("hcl")
+                    && passport.ContainsKey("ecl")
+                    && passport.ContainsKey("pid")
+                    && passport.All(kv => PassportValidators.FieldIsValid(kv));
+            }
+
+            private static bool FieldIsValid(KeyValuePair<string, string> field)
+            {
+                return field.Key switch
+                {
+                    "byr" => int.TryParse(field.Value, out var birthYear) && birthYear >= 1920 && birthYear <= 2002,
+                    "iyr" => int.TryParse(field.Value, out var issueYear) && issueYear >= 2010 && issueYear <= 2020,
+                    "eyr" => int.TryParse(field.Value, out var expireYear) && expireYear >= 2020 && expireYear <= 2030,
+                    "hgt" => PassportValidators.HeightIsValid(field),
+                    "hcl" => Regex.IsMatch(field.Value, @"^#[0-9|a-f]{6}$"),
+                    "ecl" => Regex.IsMatch(field.Value, @"^(amb|blu|brn|gry|grn|hzl|oth)$"),
+                    "pid" => Regex.IsMatch(field.Value, @"^[0-9]{9}$"),
+                    "cid" => true,
+                    _ => false
+                };
+            }
+
+            private static bool HeightIsValid(KeyValuePair<string, string> heightField)
+            {
+                var match = (new Regex(@"((\d+)(in|cm)){1}", RegexOptions.Compiled)).Match(heightField.Value);
+                var parseResult = int.TryParse(match.Groups[2].Value, out var value);
+                var cmValid = (match.Groups[3].Value.Equals("cm") && value >= 150 && value <= 193);
+                var inchesValid = (match.Groups[3].Value.Equals("in") && value >= 59 && value <= 76);
+
+                return match.Success
+                    && parseResult
+                    && (cmValid || inchesValid);
+            }
+
         }
     }
 }
