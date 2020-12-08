@@ -65,6 +65,10 @@ namespace AoC2020.Entities
                 .Sum(group => group.Item2.Count());
             builder.Append($"\n1st Answer: {totalYesAnswers}");
 
+            var totalAllYes = lines
+                .Sum(group => group.Item2.Count(answer => answer.Value == group.Item1));
+            builder.Append($"\n2nd Answer: {totalAllYes}");
+
             return builder.ToString();
         }
 
