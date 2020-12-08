@@ -24,10 +24,11 @@ namespace AoC2020.Entities
 
         public async Task<string> SolveAsync()
         {
-            var lines = new Dictionary<string, List<string>>();
+            var lines = new Dictionary<string, List<(int count, string color)>>();
             var builder = new StringBuilder();
-            var regex = new Regex(@"((?>\w+\b) (?>\w+\b)) (?>bag)", RegexOptions.Compiled);
+            var regex = new Regex(@"((?'count'\d*) )*(?'color'(?>\w+\b) (?>\w+\b)) (?>bag)", RegexOptions.Compiled);
             const string shinyGold = "shiny gold";
+            const string noOtherColor = "no other";
 
             using (var reader = new StreamReader(this._inputFile))
             {
@@ -37,12 +38,14 @@ namespace AoC2020.Entities
                 {
                     var matches = regex.Matches(line);
 
-                    var keyColor = matches.First().Groups[1].Value;
-                    lines.Add(keyColor, new List<string>());
+                    var keyColor = matches.First().Groups["color"].Value;
+                    lines.Add(keyColor, new List<(int, string)>());
 
                     for (var i = 1; i < matches.Count; i++)
                     {
-                        lines[keyColor].Add(matches[i].Groups[1].Value);
+                        var color = matches[i].Groups["color"].Value;
+                        var count = int.TryParse(matches[i].Groups["count"].Value.Trim(), out var parsed) ? parsed : 0;
+                        lines[keyColor].Add((count, color));
                     }
                 }
 
@@ -62,7 +65,7 @@ namespace AoC2020.Entities
 
                 foreach (var childColor in lines[color])
                 {
-                    if (isOrContainsShinyGold(childColor))
+                    if (isOrContainsShinyGold(childColor.color))
                     {
                         return true;
                     }
@@ -71,8 +74,21 @@ namespace AoC2020.Entities
                 return false;
             }
 
-            var shinyGoldBags = lines.Count(bagRule => bagRule.Value.Any(color => isOrContainsShinyGold(color)));
+            int countChildColors(string color)
+            {
+                if (string.Equals(noOtherColor, color, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
+                }
+
+                return lines[color].Sum(childColor => childColor.count + (childColor.count * countChildColors(childColor.color)));
+            }
+
+            var shinyGoldBags = lines.Count(bagRule => bagRule.Value.Any(color => isOrContainsShinyGold(color.color)));
             builder.Append($"\n1st Answer: {shinyGoldBags}");
+
+            var childBagCount = countChildColors(shinyGold);
+            builder.Append($"\n2nd Answer: {childBagCount}");
 
             return builder.ToString();
         }
