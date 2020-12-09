@@ -38,6 +38,10 @@ namespace AoC2020
             var daySevenSolver = new DaySevenSolver("../puzzle_input/day_7.txt");
             var solution7 = await daySevenSolver.SolveAsync().ConfigureAwait(false);
             Console.WriteLine($"Day 7: {solution7}.");
+
+            var dayEightSolver = new DayEightSolver("../puzzle_input/day_8.txt");
+            var solution8 = await dayEightSolver.SolveAsync().ConfigureAwait(false);
+            Console.WriteLine($"Day 8: {solution8}.");
         }
     }
 }
