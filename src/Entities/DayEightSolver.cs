@@ -25,7 +25,7 @@ namespace AoC2020.Entities
         public async Task<string> SolveAsync()
         {
             var instructions = new HashSet<Instruction>();
-            var executedInstructions = new HashSet<int>();
+
             var builder = new StringBuilder();
 
             using (var reader = new StreamReader(this._inputFile))
@@ -39,7 +39,71 @@ namespace AoC2020.Entities
                 }
             }
 
+            builder.Append($"\n1st Answer: {SolvePartOne(instructions)}");
+            builder.Append($"\n2nd Answer: {SolvePartTwo(instructions)}");
+            return builder.ToString();
+        }
+
+        private string SolvePartTwo(HashSet<Instruction> instructions)
+        {
+            var executedInstructions = new HashSet<int>();
             var accumulator = 0;
+            var instructionsToTest = instructions.Where(x => string.Equals(x.Operation, "jmp", StringComparison.OrdinalIgnoreCase) || string.Equals(x.Operation, "nop", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            foreach (var testInstruction in instructionsToTest)
+            {
+                bool isFailed = false;
+                accumulator = 0;
+                executedInstructions = new HashSet<int>();
+                for (var i = 0; i < instructions.Count;)
+                {
+                    if (executedInstructions.Contains(i))
+                    {
+                        isFailed = true;
+                        break;
+                    }
+
+                    var currentInstruction = instructions.ElementAt(i);
+                    var operation = currentInstruction.Operation;
+                    executedInstructions.Add(i);
+
+                    if (i + 1 == testInstruction.Id)
+                    {
+                        operation = operation switch
+                        {
+                            "jmp" => "nop",
+                            "nop" => "jmp",
+                            _ => operation
+                        };
+                    }
+
+                    if (string.Equals(operation, "acc", StringComparison.OrdinalIgnoreCase))
+                    {
+                        accumulator += currentInstruction.Argument;
+                    }
+                    else if (string.Equals(operation, "jmp", StringComparison.OrdinalIgnoreCase))
+                    {
+                        i += currentInstruction.Argument;
+                        continue;
+                    }
+
+                    i++;
+                }
+
+                if (!isFailed)
+                {
+                    return $"Instruction {testInstruction} {accumulator} is the solution.";
+                }
+            }
+
+            return null;
+        }
+
+        private string SolvePartOne(HashSet<Instruction> instructions)
+        {
+            var executedInstructions = new HashSet<int>();
+            var accumulator = 0;
+
             for (var i = 0; i < instructions.Count;)
             {
                 if (executedInstructions.Contains(i))
@@ -63,8 +127,7 @@ namespace AoC2020.Entities
                 i++;
             }
 
-            builder.Append($"\n1st Answer: {accumulator}");
-            return builder.ToString();
+            return $"\n1st Answer: {accumulator}";
         }
 
         private class Instruction
@@ -94,6 +157,11 @@ namespace AoC2020.Entities
                     hash = (13 * hash) + this.Argument.GetHashCode();
                     return hash;
                 }
+            }
+
+            public override string ToString()
+            {
+                return $"{this.Id}: {this.Operation} {this.Argument}";
             }
 
             public override bool Equals(object obj)
